@@ -20,7 +20,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5000","https://leagalease.vercel.app"],
+    origin: ["http://localhost:5173", "http://localhost:5000","https://fyp-mu-lilac.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
