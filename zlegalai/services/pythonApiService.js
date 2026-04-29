@@ -1,6 +1,7 @@
 const axios = require("axios");
 
-const PYTHON_API_URL = process.env.PYTHON_API_URL || "http://127.0.0.1:8000";
+const PYTHON_API_URL =
+  process.env.PYTHON_API_URL || "https://legaleasepy.onrender.com";
 
 const pythonApi = axios.create({
   baseURL: PYTHON_API_URL,
