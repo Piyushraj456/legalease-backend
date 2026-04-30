@@ -102,13 +102,24 @@ async function summarizeDocument(pythonDocId, fileUrl = null) {
   }
 }
 
-async function analyzeRisk(pythonDocId) {
+async function analyzeRisk(pythonDocId, fileUrl = null) {
   try {
     const response = await pythonApi.post("/risk", null, {
       params: { document_id: pythonDocId },
     });
     return response.data;
   } catch (error) {
+    // If Python lost the doc (Render restart wiped memory), re-extract then retry
+    if (error.response?.status === 404 && fileUrl) {
+      console.log("⚠️ analyzeRisk: doc not found in Python, re-extracting...");
+      const reExtracted = await extractDocument(fileUrl, null, 3, 50);
+      const newDocId = reExtracted?.document_id;
+      if (!newDocId) throw new Error("Re-extraction failed: no document_id returned");
+      const retry = await pythonApi.post("/risk", null, {
+        params: { document_id: newDocId },
+      });
+      return { ...retry.data, _reExtractedDocId: newDocId };
+    }
     handleApiError("analyzeRisk", error);
   }
 }
