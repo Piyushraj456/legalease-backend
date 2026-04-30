@@ -61,7 +61,8 @@ async function extractDocument(
   fileUrl,
   category = null,
   minScore = 5,
-  maxResults = 50
+  maxResults = 50,
+  _retryCount = 0
 ) {
   try {
     const response = await pythonApi.post(
@@ -71,6 +72,14 @@ async function extractDocument(
     );
     return response.data;
   } catch (error) {
+    // Render free tier cold start causes 502 — wait and retry up to 3 times
+    const is502 = error.response?.status === 502 || error.code === "ECONNABORTED";
+    if (is502 && _retryCount < 3) {
+      const waitMs = (_retryCount + 1) * 15000; // 15s, 30s, 45s
+      console.log(`⏳ Python 502 cold start — waiting ${waitMs / 1000}s then retrying (attempt ${_retryCount + 1}/3)...`);
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      return extractDocument(fileUrl, category, minScore, maxResults, _retryCount + 1);
+    }
     handleApiError("extractDocument", error);
   }
 }
