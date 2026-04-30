@@ -18,9 +18,19 @@ dotenv.config();
 
 connectDB();
 
+const { pythonApi } = require("./services/pythonApiService");
+setInterval(async () => {
+  try {
+    await pythonApi.get("/health");
+    console.log("🔥 Python keep-alive ping OK");
+  } catch (e) {
+    console.warn("⚠️ Keep-alive ping failed:", e.message);
+  }
+}, 10 * 60 * 1000); // every 10 minutes
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5000","https://legalease-ecru.vercel.app"],
+    origin: ["http://localhost:5173", "http://localhost:5000"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
