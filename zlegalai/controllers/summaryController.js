@@ -147,7 +147,14 @@ const summarizeDocument = async (req, res, next) => {
         llmError: summaryResponse.summary_metadata?.llm_error
       };
 
-      summaryRecord.status = 'completed';
+   summaryRecord.status = 'completed';
+      // Persist updated pythonDocId if summarizer used fileUrl fallback
+      if (summaryResponse.document_id && summaryResponse.document_id !== document.pythonDocId) {
+        document.pythonDocId = summaryResponse.document_id;
+        await document.save();
+        summaryRecord.pythonDocId = summaryResponse.document_id;
+        console.log("Updated pythonDocId from summary fallback:", summaryResponse.document_id);
+      }
       await summaryRecord.save();
 
       console.log("Summary saved to database");
